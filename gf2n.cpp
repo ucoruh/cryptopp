@@ -222,14 +222,14 @@ void PolynomialMod2::Encode(BufferedTransformation &bt, size_t outputLen) const
 
 void PolynomialMod2::DEREncodeAsOctetString(BufferedTransformation &bt, size_t length) const
 {
-	DERGeneralEncoder enc(bt, OCTET_STRING);
+	DERGeneralEncoder enc(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 	Encode(enc, length);
 	enc.MessageEnd();
 }
 
 void PolynomialMod2::BERDecodeAsOctetString(BufferedTransformation &bt, size_t length)
 {
-	BERGeneralDecoder dec(bt, OCTET_STRING);
+	BERGeneralDecoder dec(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 	if (!dec.IsDefiniteLength() || dec.RemainingLength() != length)
 		BERDecodeError();
 	Decode(dec, length);

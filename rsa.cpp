@@ -210,7 +210,7 @@ void InvertibleRSAFunction::BERDecodePrivateKey(BufferedTransformation &bt, bool
 {
 	BERSequenceDecoder privateKey(bt);
 		word32 version;
-		BERDecodeUnsigned<word32>(privateKey, version, INTEGER, 0, 0);	// check version
+		BERDecodeUnsigned<word32>(privateKey, version, static_cast<byte>(ASNTag::INTEGER), 0, 0);	// check version
 		m_n.BERDecode(privateKey);
 		m_e.BERDecode(privateKey);
 		m_d.BERDecode(privateKey);

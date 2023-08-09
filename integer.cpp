@@ -3448,7 +3448,7 @@ void Integer::Encode(BufferedTransformation &bt, size_t outputLen, Signedness si
 
 void Integer::DEREncode(BufferedTransformation &bt) const
 {
-	DERGeneralEncoder enc(bt, INTEGER);
+	DERGeneralEncoder enc(bt, static_cast<byte>(ASNTag::INTEGER));
 	Encode(enc, MinEncodedSize(SIGNED), SIGNED);
 	enc.MessageEnd();
 }
@@ -3462,7 +3462,7 @@ void Integer::BERDecode(const byte *input, size_t len)
 
 void Integer::BERDecode(BufferedTransformation &bt)
 {
-	BERGeneralDecoder dec(bt, INTEGER);
+	BERGeneralDecoder dec(bt, static_cast<byte>(ASNTag::INTEGER));
 	if (!dec.IsDefiniteLength() || dec.MaxRetrievable() < dec.RemainingLength())
 		BERDecodeError();
 	Decode(dec, (size_t)dec.RemainingLength(), SIGNED);
@@ -3471,14 +3471,14 @@ void Integer::BERDecode(BufferedTransformation &bt)
 
 void Integer::DEREncodeAsOctetString(BufferedTransformation &bt, size_t length) const
 {
-	DERGeneralEncoder enc(bt, OCTET_STRING);
+	DERGeneralEncoder enc(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 	Encode(enc, length);
 	enc.MessageEnd();
 }
 
 void Integer::BERDecodeAsOctetString(BufferedTransformation &bt, size_t length)
 {
-	BERGeneralDecoder dec(bt, OCTET_STRING);
+	BERGeneralDecoder dec(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 	if (!dec.IsDefiniteLength() || dec.RemainingLength() != length)
 		BERDecodeError();
 	Decode(dec, length);

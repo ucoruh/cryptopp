@@ -169,14 +169,14 @@ void x25519::BERDecode(BufferedTransformation &bt)
     // https://www.cryptopp.com/wiki/curve25519_keys
     BERSequenceDecoder privateKeyInfo(bt);
         word32 version;
-        BERDecodeUnsigned<word32>(privateKeyInfo, version, INTEGER, 0, 1);    // check version
+        BERDecodeUnsigned<word32>(privateKeyInfo, version, static_cast<byte>(ASNTag::INTEGER), 0, 1);    // check version
 
         BERSequenceDecoder algorithm(privateKeyInfo);
             // GetAlgorithmID().BERDecodeAndCheck(algorithm);
             BERDecodeAndCheckAlgorithmID(algorithm);
         algorithm.MessageEnd();
 
-        BERGeneralDecoder octetString(privateKeyInfo, OCTET_STRING);
+        BERGeneralDecoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
             BERDecodePrivateKey(octetString, false, (size_t)privateKeyInfo.RemainingLength());
         octetString.MessageEnd();
 
@@ -186,7 +186,7 @@ void x25519::BERDecode(BufferedTransformation &bt)
         {
             // Should we test this before decoding? In either case we
             // just throw a BERDecodeErr() when we can't parse it.
-            BERGeneralDecoder publicKey(privateKeyInfo, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+            BERGeneralDecoder publicKey(privateKeyInfo, static_cast<uint8_t>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED) | 1);
             SecByteBlock subjectPublicKey;
             unsigned int unusedBits;
             BERDecodeBitString(publicKey, subjectPublicKey, unusedBits);
@@ -221,13 +221,13 @@ void x25519::DEREncode(BufferedTransformation &bt, int version) const
             GetAlgorithmID().DEREncode(algorithm);
         algorithm.MessageEnd();
 
-        DERGeneralEncoder octetString(privateKeyInfo, OCTET_STRING);
+        DERGeneralEncoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
             DEREncodePrivateKey(octetString);
         octetString.MessageEnd();
 
         if (version == 1)
         {
-            DERGeneralEncoder publicKey(privateKeyInfo, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+            DERGeneralEncoder publicKey(privateKeyInfo, static_cast<uint8_t>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED) | 1);
                 DEREncodeBitString(publicKey, m_pk, PUBLIC_KEYLENGTH);
             publicKey.MessageEnd();
         }
@@ -240,7 +240,7 @@ void x25519::BERDecodePrivateKey(BufferedTransformation &bt, bool parametersPres
     // https://tools.ietf.org/html/rfc8410 and
     // https://www.cryptopp.com/wiki/curve25519_keys
 
-    BERGeneralDecoder privateKey(bt, OCTET_STRING);
+    BERGeneralDecoder privateKey(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 
         if (!privateKey.IsDefiniteLength())
             BERDecodeError();
@@ -259,7 +259,7 @@ void x25519::BERDecodePrivateKey(BufferedTransformation &bt, bool parametersPres
 void x25519::DEREncodePrivateKey(BufferedTransformation &bt) const
 {
     // https://tools.ietf.org/html/rfc8410
-    DERGeneralEncoder privateKey(bt, OCTET_STRING);
+    DERGeneralEncoder privateKey(bt, static_cast<byte>(ASNTag::OCTET_STRING));
         privateKey.Put(m_sk, SECRET_KEYLENGTH);
     privateKey.MessageEnd();
 }
@@ -502,14 +502,14 @@ void ed25519PrivateKey::BERDecode(BufferedTransformation &bt)
     // https://www.cryptopp.com/wiki/curve25519_keys
     BERSequenceDecoder privateKeyInfo(bt);
         word32 version;
-        BERDecodeUnsigned<word32>(privateKeyInfo, version, INTEGER, 0, 1);    // check version
+        BERDecodeUnsigned<word32>(privateKeyInfo, version, static_cast<byte>(ASNTag::INTEGER), 0, 1);    // check version
 
         BERSequenceDecoder algorithm(privateKeyInfo);
             // GetAlgorithmID().BERDecodeAndCheck(algorithm);
             BERDecodeAndCheckAlgorithmID(algorithm);
         algorithm.MessageEnd();
 
-        BERGeneralDecoder octetString(privateKeyInfo, OCTET_STRING);
+        BERGeneralDecoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
             BERDecodePrivateKey(octetString, false, (size_t)privateKeyInfo.RemainingLength());
         octetString.MessageEnd();
 
@@ -519,7 +519,7 @@ void ed25519PrivateKey::BERDecode(BufferedTransformation &bt)
         {
             // Should we test this before decoding? In either case we
             // just throw a BERDecodeErr() when we can't parse it.
-            BERGeneralDecoder publicKey(privateKeyInfo, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+            BERGeneralDecoder publicKey(privateKeyInfo, static_cast<uint8_t>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED) | 1);
             SecByteBlock subjectPublicKey;
             unsigned int unusedBits;
             BERDecodeBitString(publicKey, subjectPublicKey, unusedBits);
@@ -553,13 +553,13 @@ void ed25519PrivateKey::DEREncode(BufferedTransformation &bt, int version) const
             GetAlgorithmID().DEREncode(algorithm);
         algorithm.MessageEnd();
 
-        DERGeneralEncoder octetString(privateKeyInfo, OCTET_STRING);
+        DERGeneralEncoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
             DEREncodePrivateKey(octetString);
         octetString.MessageEnd();
 
         if (version == 1)
         {
-            DERGeneralEncoder publicKey(privateKeyInfo, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+            DERGeneralEncoder publicKey(privateKeyInfo, static_cast<uint8_t>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED) | 1);
                 DEREncodeBitString(publicKey, m_pk, PUBLIC_KEYLENGTH);
             publicKey.MessageEnd();
         }
@@ -572,7 +572,7 @@ void ed25519PrivateKey::BERDecodePrivateKey(BufferedTransformation &bt, bool par
     // https://tools.ietf.org/html/rfc8410 and
     // https://www.cryptopp.com/wiki/curve25519_keys
 
-    BERGeneralDecoder privateKey(bt, OCTET_STRING);
+    BERGeneralDecoder privateKey(bt, static_cast<byte>(ASNTag::OCTET_STRING));
 
         if (!privateKey.IsDefiniteLength())
             BERDecodeError();
@@ -591,7 +591,7 @@ void ed25519PrivateKey::BERDecodePrivateKey(BufferedTransformation &bt, bool par
 void ed25519PrivateKey::DEREncodePrivateKey(BufferedTransformation &bt) const
 {
     // https://tools.ietf.org/html/rfc8410
-    DERGeneralEncoder privateKey(bt, OCTET_STRING);
+    DERGeneralEncoder privateKey(bt, static_cast<byte>(ASNTag::OCTET_STRING));
         privateKey.Put(m_sk, SECRET_KEYLENGTH);
     privateKey.MessageEnd();
 }

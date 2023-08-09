@@ -45,7 +45,7 @@ template <class T> void DL_FixedBasePrecomputationImpl<T>::Load(const DL_GroupPr
 {
 	BERSequenceDecoder seq(bt);
 	word32 version;
-	BERDecodeUnsigned<word32>(seq, version, INTEGER, 1, 1);
+	BERDecodeUnsigned<word32>(seq, version, static_cast<byte>(ASNTag::INTEGER), 1, 1);
 	m_exponentBase.BERDecode(seq);
 	m_windowSize = m_exponentBase.BitCount() - 1;
 	m_bases.clear();

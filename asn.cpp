@@ -89,14 +89,14 @@ bool BERLengthDecode(BufferedTransformation &bt, size_t &length)
 
 void DEREncodeNull(BufferedTransformation &out)
 {
-	out.Put(TAG_NULL);
+	out.Put(static_cast<byte>(ASNTag::TAG_NULL));
 	out.Put(0);
 }
 
 void BERDecodeNull(BufferedTransformation &in)
 {
 	byte b;
-	if (!in.Get(b) || b != TAG_NULL)
+	if (!in.Get(b) || b != static_cast<byte>(ASNTag::TAG_NULL))
 		BERDecodeError();
 	size_t length;
 	if (!BERLengthDecode(in, length) || length != 0)
@@ -106,7 +106,7 @@ void BERDecodeNull(BufferedTransformation &in)
 /// ASN Strings
 size_t DEREncodeOctetString(BufferedTransformation &bt, const byte *str, size_t strLen)
 {
-	bt.Put(OCTET_STRING);
+	bt.Put(static_cast<byte>(ASNTag::OCTET_STRING));
 	size_t lengthBytes = DERLengthEncode(bt, strLen);
 	bt.Put(str, strLen);
 	return 1+lengthBytes+strLen;
@@ -120,7 +120,7 @@ size_t DEREncodeOctetString(BufferedTransformation &bt, const SecByteBlock &str)
 size_t BERDecodeOctetString(BufferedTransformation &bt, SecByteBlock &str)
 {
 	byte b;
-	if (!bt.Get(b) || b != OCTET_STRING)
+	if (!bt.Get(b) || b != static_cast<byte>(ASNTag::OCTET_STRING))
 		BERDecodeError();
 
 	size_t bc;
@@ -138,7 +138,7 @@ size_t BERDecodeOctetString(BufferedTransformation &bt, SecByteBlock &str)
 size_t BERDecodeOctetString(BufferedTransformation &bt, BufferedTransformation &str)
 {
 	byte b;
-	if (!bt.Get(b) || b != OCTET_STRING)
+	if (!bt.Get(b) || b != static_cast<byte>(ASNTag::OCTET_STRING))
 		BERDecodeError();
 
 	size_t bc;
@@ -236,7 +236,7 @@ size_t BERDecodeDate(BufferedTransformation &bt, SecByteBlock &str, byte asnTag)
 
 size_t DEREncodeBitString(BufferedTransformation &bt, const byte *str, size_t strLen, unsigned int unusedBits)
 {
-	bt.Put(BIT_STRING);
+	bt.Put(static_cast<byte>(ASNTag::BIT_STRING));
 	size_t lengthBytes = DERLengthEncode(bt, strLen+1);
 	bt.Put((byte)unusedBits);
 	bt.Put(str, strLen);
@@ -246,7 +246,7 @@ size_t DEREncodeBitString(BufferedTransformation &bt, const byte *str, size_t st
 size_t BERDecodeBitString(BufferedTransformation &bt, SecByteBlock &str, unsigned int &unusedBits)
 {
 	byte b;
-	if (!bt.Get(b) || b != BIT_STRING)
+	if (!bt.Get(b) || b != static_cast<byte>(ASNTag::BIT_STRING))
 		BERDecodeError();
 
 	size_t bc;
@@ -337,7 +337,7 @@ void OID::DEREncode(BufferedTransformation &bt) const
 	temp.Put(byte(m_values[0] * 40 + m_values[1]));
 	for (size_t i=2; i<m_values.size(); i++)
 		EncodeValue(temp, m_values[i]);
-	bt.Put(OBJECT_IDENTIFIER);
+	bt.Put(static_cast<byte>(ASNTag::OBJECT_IDENTIFIER));
 	DERLengthEncode(bt, temp.CurrentSize());
 	temp.TransferTo(bt);
 }
@@ -345,7 +345,7 @@ void OID::DEREncode(BufferedTransformation &bt) const
 void OID::BERDecode(BufferedTransformation &bt)
 {
 	byte b;
-	if (!bt.Get(b) || b != OBJECT_IDENTIFIER)
+	if (!bt.Get(b) || b != static_cast<byte>(ASNTag::OBJECT_IDENTIFIER))
 		BERDecodeError();
 
 	size_t length;
@@ -433,11 +433,11 @@ void EncodedObjectFilter::Put(const byte *inString, size_t length)
 			if (!BERLengthDecode(walker, m_lengthRemaining, definiteLength))
 				return;
 			m_queue.TransferTo(CurrentTarget(), walker.GetCurrentPosition());
-			if (!((m_id & CONSTRUCTED) || definiteLength))
+			if (!((m_id & static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED)) || definiteLength))
 				BERDecodeError();
 			if (!definiteLength)
 			{
-				if (!(m_id & CONSTRUCTED))
+				if (!(m_id & static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED)))
 					BERDecodeError();
 				m_level++;
 				m_state = IDENTIFIER;
@@ -507,7 +507,7 @@ void BERGeneralDecoder::Init(byte asnTag)
 	if (!BERLengthDecode(m_inQueue, m_length, m_definiteLength))
 		BERDecodeError();
 
-	if (!m_definiteLength && !(asnTag & CONSTRUCTED))
+	if (!m_definiteLength && !(asnTag & static_cast<uint8_t>(ASNIdFlag::CONSTRUCTED)))
 		BERDecodeError();	// cannot be primitive and have indefinite length
 }
 
@@ -640,7 +640,7 @@ void X509PublicKey::BERDecode(BufferedTransformation &bt)
 			bool parametersPresent = algorithm.EndReached() ? false : BERDecodeAlgorithmParameters(algorithm);
 		algorithm.MessageEnd();
 
-		BERGeneralDecoder subjectPublicKey(subjectPublicKeyInfo, BIT_STRING);
+		BERGeneralDecoder subjectPublicKey(subjectPublicKeyInfo, static_cast<byte>(ASNTag::BIT_STRING));
 			subjectPublicKey.CheckByte(0);	// unused bits
 			BERDecodePublicKey(subjectPublicKey, parametersPresent, (size_t)subjectPublicKey.RemainingLength());
 		subjectPublicKey.MessageEnd();
@@ -656,7 +656,7 @@ void X509PublicKey::DEREncode(BufferedTransformation &bt) const
 			DEREncodeAlgorithmParameters(algorithm);
 		algorithm.MessageEnd();
 
-		DERGeneralEncoder subjectPublicKey(subjectPublicKeyInfo, BIT_STRING);
+		DERGeneralEncoder subjectPublicKey(subjectPublicKeyInfo, static_cast<byte>(ASNTag::BIT_STRING));
 			subjectPublicKey.Put(0);	// unused bits
 			DEREncodePublicKey(subjectPublicKey);
 		subjectPublicKey.MessageEnd();
@@ -668,14 +668,14 @@ void PKCS8PrivateKey::BERDecode(BufferedTransformation &bt)
 {
 	BERSequenceDecoder privateKeyInfo(bt);
 		word32 version;
-		BERDecodeUnsigned<word32>(privateKeyInfo, version, INTEGER, 0, 0);	// check version
+		BERDecodeUnsigned<word32>(privateKeyInfo, version, static_cast<byte>(ASNTag::INTEGER), 0, 0);	// check version
 
 		BERSequenceDecoder algorithm(privateKeyInfo);
 			GetAlgorithmID().BERDecodeAndCheck(algorithm);
 			bool parametersPresent = algorithm.EndReached() ? false : BERDecodeAlgorithmParameters(algorithm);
 		algorithm.MessageEnd();
 
-		BERGeneralDecoder octetString(privateKeyInfo, OCTET_STRING);
+		BERGeneralDecoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
 			BERDecodePrivateKey(octetString, parametersPresent, (size_t)privateKeyInfo.RemainingLength());
 		octetString.MessageEnd();
 
@@ -694,7 +694,7 @@ void PKCS8PrivateKey::DEREncode(BufferedTransformation &bt) const
 			DEREncodeAlgorithmParameters(algorithm);
 		algorithm.MessageEnd();
 
-		DERGeneralEncoder octetString(privateKeyInfo, OCTET_STRING);
+		DERGeneralEncoder octetString(privateKeyInfo, static_cast<byte>(ASNTag::OCTET_STRING));
 			DEREncodePrivateKey(octetString);
 		octetString.MessageEnd();
 

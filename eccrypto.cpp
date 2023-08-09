@@ -551,13 +551,13 @@ void DL_GroupParameters_EC<EC>::BERDecode(BufferedTransformation &bt)
 	byte b;
 	if (!bt.Peek(b))
 		BERDecodeError();
-	if (b == OBJECT_IDENTIFIER)
+	if (b == static_cast<byte>(ASNTag::OBJECT_IDENTIFIER))
 		Initialize(OID(bt));
 	else
 	{
 		BERSequenceDecoder seq(bt);
 			word32 version;
-			BERDecodeUnsigned<word32>(seq, version, INTEGER, 1, 1);	// check version
+			BERDecodeUnsigned<word32>(seq, version, static_cast<byte>(ASNTag::INTEGER), 1, 1);	// check version
 			EllipticCurve ec(seq);
 			Point G = ec.BERDecodePoint(seq);
 			Integer n(seq);
@@ -720,19 +720,19 @@ void DL_PrivateKey_EC<EC>::BERDecodePrivateKey(BufferedTransformation &bt, bool 
 	CRYPTOPP_UNUSED(size);
 	BERSequenceDecoder seq(bt);
 		word32 version;
-		BERDecodeUnsigned<word32>(seq, version, INTEGER, 1, 1);	// check version
+		BERDecodeUnsigned<word32>(seq, version, static_cast<byte>(ASNTag::INTEGER), 1, 1);	// check version
 
-		BERGeneralDecoder dec(seq, OCTET_STRING);
+		BERGeneralDecoder dec(seq, static_cast<byte>(ASNTag::OCTET_STRING));
 		if (!dec.IsDefiniteLength())
 			BERDecodeError();
 		Integer x;
 		x.Decode(dec, (size_t)dec.RemainingLength());
 		dec.MessageEnd();
-		if (!parametersPresent && seq.PeekByte() != (CONTEXT_SPECIFIC | CONSTRUCTED | 0))
+		if (!parametersPresent && seq.PeekByte() != (static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0))
 			BERDecodeError();
-		if (!seq.EndReached() && seq.PeekByte() == (CONTEXT_SPECIFIC | CONSTRUCTED | 0))
+		if (!seq.EndReached() && seq.PeekByte() == (static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0))
 		{
-			BERGeneralDecoder parameters(seq, CONTEXT_SPECIFIC | CONSTRUCTED | 0);
+			BERGeneralDecoder parameters(seq, static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0);
 			this->AccessGroupParameters().BERDecode(parameters);
 			parameters.MessageEnd();
 		}
@@ -741,7 +741,7 @@ void DL_PrivateKey_EC<EC>::BERDecodePrivateKey(BufferedTransformation &bt, bool 
 			// skip over the public element
 			SecByteBlock subjectPublicKey;
 			unsigned int unusedBits;
-			BERGeneralDecoder publicKey(seq, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+			BERGeneralDecoder publicKey(seq, static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 1);
 			BERDecodeBitString(publicKey, subjectPublicKey, unusedBits);
 			publicKey.MessageEnd();
 			Element Q;
@@ -791,19 +791,19 @@ void DL_PrivateKey_ECGDSA<EC>::BERDecodePrivateKey(BufferedTransformation &bt, b
 	CRYPTOPP_UNUSED(size);
 	BERSequenceDecoder seq(bt);
 		word32 version;
-		BERDecodeUnsigned<word32>(seq, version, INTEGER, 1, 1);	// check version
+		BERDecodeUnsigned<word32>(seq, version, static_cast<byte>(ASNTag::INTEGER), 1, 1);	// check version
 
-		BERGeneralDecoder dec(seq, OCTET_STRING);
+		BERGeneralDecoder dec(seq, static_cast<byte>(ASNTag::OCTET_STRING));
 		if (!dec.IsDefiniteLength())
 			BERDecodeError();
 		Integer x;
 		x.Decode(dec, (size_t)dec.RemainingLength());
 		dec.MessageEnd();
-		if (!parametersPresent && seq.PeekByte() != (CONTEXT_SPECIFIC | CONSTRUCTED | 0))
+		if (!parametersPresent && seq.PeekByte() != (static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0))
 			BERDecodeError();
-		if (!seq.EndReached() && seq.PeekByte() == (CONTEXT_SPECIFIC | CONSTRUCTED | 0))
+		if (!seq.EndReached() && seq.PeekByte() == (static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0))
 		{
-			BERGeneralDecoder parameters(seq, CONTEXT_SPECIFIC | CONSTRUCTED | 0);
+			BERGeneralDecoder parameters(seq, static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 0);
 			this->AccessGroupParameters().BERDecode(parameters);
 			parameters.MessageEnd();
 		}
@@ -812,7 +812,7 @@ void DL_PrivateKey_ECGDSA<EC>::BERDecodePrivateKey(BufferedTransformation &bt, b
 			// skip over the public element
 			SecByteBlock subjectPublicKey;
 			unsigned int unusedBits;
-			BERGeneralDecoder publicKey(seq, CONTEXT_SPECIFIC | CONSTRUCTED | 1);
+			BERGeneralDecoder publicKey(seq, static_cast<byte>(ASNIdFlag::CONTEXT_SPECIFIC) | static_cast<byte>(ASNIdFlag::CONSTRUCTED) | 1);
 			BERDecodeBitString(publicKey, subjectPublicKey, unusedBits);
 			publicKey.MessageEnd();
 			Element Q;

@@ -26,7 +26,7 @@ NAMESPACE_BEGIN(CryptoPP)
 
 /// \brief ASN.1 types
 /// \note These tags are not complete
-enum ASNTag
+enum class ASNTag
 {
 	/// \brief ASN.1 Boolean
 	BOOLEAN 			= 0x01,
@@ -82,7 +82,7 @@ enum ASNTag
 
 /// \brief ASN.1 flags
 /// \note These flags are not complete
-enum ASNIdFlag
+enum class ASNIdFlag
 {
 	/// \brief ASN.1 Universal class
 	UNIVERSAL           = 0x00,
@@ -380,7 +380,7 @@ class CRYPTOPP_DLL BERGeneralDecoder : public Store
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SEQUENCE | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SEQUENCE) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	virtual ~BERGeneralDecoder();
 
@@ -491,7 +491,7 @@ class CRYPTOPP_DLL DERGeneralEncoder : public ByteQueue
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SEQUENCE | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SEQUENCE) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	virtual ~DERGeneralEncoder();
 
@@ -525,7 +525,7 @@ class CRYPTOPP_DLL BERSequenceDecoder : public BERGeneralDecoder
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SEQUENCE | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SEQUENCE) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	/// \brief Construct an ASN.1 decoder
 	/// \param inQueue input byte queue
@@ -557,7 +557,7 @@ class CRYPTOPP_DLL DERSequenceEncoder : public DERGeneralEncoder
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SEQUENCE | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SEQUENCE) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	/// \brief Construct an ASN.1 encoder
 	/// \param outQueue output byte queue
@@ -589,7 +589,7 @@ class CRYPTOPP_DLL BERSetDecoder : public BERGeneralDecoder
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SET | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SET) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	/// \brief Construct an ASN.1 decoder
 	/// \param inQueue input byte queue
@@ -621,7 +621,7 @@ class CRYPTOPP_DLL DERSetEncoder : public DERGeneralEncoder
 {
 public:
 	/// \brief Default ASN.1 tag
-	enum {DefaultTag = SET | EnumToInt(CONSTRUCTED)};
+	enum {DefaultTag = EnumToInt(ASNTag::SET) | EnumToInt(ASNIdFlag::CONSTRUCTED)};
 
 	/// \brief Construct an ASN.1 encoder
 	/// \param outQueue output byte queue
@@ -817,11 +817,11 @@ protected:
 /// \param asnTag the ASN.1 identifier
 /// \details DEREncodeUnsigned() can be used with INTEGER, BOOLEAN, and ENUM
 template <class T>
-size_t DEREncodeUnsigned(BufferedTransformation &out, T w, byte asnTag = INTEGER)
+size_t DEREncodeUnsigned(BufferedTransformation &out, T w, byte asnTag = static_cast<byte>(ASNTag::INTEGER))
 {
 	byte buf[sizeof(w)+1];
 	unsigned int bc;
-	if (asnTag == BOOLEAN)
+	if (asnTag == static_cast<byte>(ASNTag::BOOLEAN))
 	{
 		buf[sizeof(w)] = w ? 0xff : 0;
 		bc = 1;
@@ -853,7 +853,7 @@ size_t DEREncodeUnsigned(BufferedTransformation &out, T w, byte asnTag = INTEGER
 /// \throw BERDecodeErr() if the value cannot be parsed or the decoded value is not within range.
 /// \details DEREncodeUnsigned() can be used with INTEGER, BOOLEAN, and ENUM
 template <class T>
-void BERDecodeUnsigned(BufferedTransformation &in, T &w, byte asnTag = INTEGER,
+void BERDecodeUnsigned(BufferedTransformation &in, T &w, byte asnTag = static_cast<byte>(ASNTag::INTEGER),
 					   T minValue = 0, T maxValue = T(0xffffffff))
 {
 	byte b;
@@ -866,9 +866,9 @@ void BERDecodeUnsigned(BufferedTransformation &in, T &w, byte asnTag = INTEGER,
 		BERDecodeError();
 	if (bc > in.MaxRetrievable())  // Issue 346
 		BERDecodeError();
-	if (asnTag == BOOLEAN && bc != 1) // X.690, 8.2.1
+	if (asnTag == static_cast<byte>(ASNTag::BOOLEAN) && bc != 1) // X.690, 8.2.1
 		BERDecodeError();
-	if ((asnTag == INTEGER || asnTag == ENUMERATED) && bc == 0) // X.690, 8.3.1 and 8.4
+	if ((asnTag == static_cast<byte>(ASNTag::INTEGER) || asnTag == static_cast<byte>(ASNTag::ENUMERATED)) && bc == 0) // X.690, 8.3.1 and 8.4
 		BERDecodeError();
 
 	SecByteBlock buf(bc);
