@@ -659,7 +659,7 @@ public:
 	/// \param tag ASN.1 tag to match as optional data
 	/// \param mask the mask to apply when matching the tag
 	/// \sa ASNTag and ASNIdFlag
-	void BERDecode(BERSequenceDecoder &seqDecoder, byte tag, byte mask = ~CONSTRUCTED)
+	void BERDecode(BERSequenceDecoder &seqDecoder, byte tag, byte mask = ~static_cast<byte>(ASNIdFlag::CONSTRUCTED))
 	{
 		byte b;
 		if (seqDecoder.Peek(b) && (b & mask) == tag)
